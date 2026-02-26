@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="View your Triple-J Car Rentals profile, rental history, reservations, and invoices.">
+    <title>My Profile — Triple-J Car Rentals</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+
+<body>
+    <div class="bg-particles"></div>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">🚗</div><span class="logo-text">TRIPLE-J</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+                    <a href="cars.html" class="nav-link"><span class="nav-icon">🚙</span> Browse Cars</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Transactions</div>
+                    <a href="transactions.html" class="nav-link"><span class="nav-icon">📋</span> Rent / Reserve</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="profile.html" class="nav-link active"><span class="nav-icon">👤</span> My Profile</a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-id" id="userIdDisplay">ID: —</div>
+                    </div>
+                </div>
+                <a href="#" class="nav-link" style="margin-top:8px;color:var(--accent-red);" onclick="logout()"><span
+                        class="nav-icon">🚪</span> Log Out</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>My Profile</h1>
+                <p>View your account details and transaction history.</p>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="profile-card animate-in" id="profileCard">
+                <div class="profile-avatar" id="profileAvatar">?</div>
+                <div class="profile-details">
+                    <h2 id="profileName">Loading...</h2>
+                    <div class="profile-meta">
+                        <span>📧 <span id="profileContact">—</span></span>
+                        <span>🆔 Customer ID: <strong id="profileId">—</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rental History -->
+            <div class="card animate-in" style="margin-bottom:24px;">
+                <div class="card-header">
+                    <h2>🔑 Rental History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Rental ID</th>
+                                    <th>Car ID</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Price</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rentalHistoryBody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center;color:var(--text-muted);">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reservation History -->
+            <div class="card animate-in" style="margin-bottom:24px;">
+                <div class="card-header">
+                    <h2>📅 Reservation History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Res. ID</th>
+                                    <th>Car ID</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationHistoryBody">
+                                <tr>
+                                    <td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice History -->
+            <div class="card animate-in">
+                <div class="card-header">
+                    <h2>🧾 Invoice History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Invoice ID</th>
+                                    <th>Car</th>
+                                    <th>Processed By</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceHistoryBody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center;color:var(--text-muted);">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth();
+        loadUserInfo();
+
+        (async function loadProfile() {
+            const customer = JSON.parse(localStorage.getItem('customer'));
+            try {
+                const res = await api.getProfile(customer.customerID);
+                if (!res.success) {
+                    showToast('error', 'Failed to load profile.');
+                    return;
+                }
+
+                const data = res.data;
+                const c = data.customer;
+                document.getElementById('profileName').textContent = c.name;
+                document.getElementById('profileContact').textContent = c.contactNumber;
+                document.getElementById('profileId').textContent = c.customerID;
+                document.getElementById('profileAvatar').textContent = c.name.charAt(0).toUpperCase();
+
+                // Rental History
+                const rentalBody = document.getElementById('rentalHistoryBody');
+                const rentals = data.rentals || [];
+                if (rentals.length > 0) {
+                    rentalBody.innerHTML = rentals.map(r => `
+                        <tr>
+                            <td>${r.rentalID}</td>
+                            <td><strong>${r.carID}</strong></td>
+                            <td>${r.carBrand}</td>
+                            <td>${r.carModel}</td>
+                            <td>₱${r.carPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td>${r.rentalDate || '—'}</td>
+                            <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    rentalBody.innerHTML = '<tr><td colspan="7" class="empty-state">No rentals yet.</td></tr>';
+                }
+
+                // Reservation History
+                const reservationBody = document.getElementById('reservationHistoryBody');
+                const reservations = data.reservations || [];
+                if (reservations.length > 0) {
+                    reservationBody.innerHTML = reservations.map(r => `
+                        <tr>
+                            <td>${r.reservationID}</td>
+                            <td><strong>${r.carID}</strong></td>
+                            <td>${r.carBrand}</td>
+                            <td>${r.carModel}</td>
+                            <td>${r.reservationDate || '—'}</td>
+                            <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    reservationBody.innerHTML = '<tr><td colspan="6" class="empty-state">No reservations yet.</td></tr>';
+                }
+
+                // Invoice History
+                const invoiceBody = document.getElementById('invoiceHistoryBody');
+                const invoices = data.invoices || [];
+                if (invoices.length > 0) {
+                    invoiceBody.innerHTML = invoices.map(inv => `
+                        <tr>
+                            <td>${inv.invoiceID}</td>
+                            <td>${inv.carBrand} ${inv.carModel} (ID: ${inv.carID})</td>
+                            <td>${inv.employeeName}</td>
+                            <td style="font-weight:700;color:var(--accent-cyan);">₱${inv.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td>${inv.invoiceDate || '—'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    invoiceBody.innerHTML = '<tr><td colspan="5" class="empty-state">No invoices yet.</td></tr>';
+                }
+
+            } catch (e) {
+                showToast('error', 'Error loading profile data.');
+                console.error(e);
+            }
+        })();
+    </script>
+</body>
+
+</html>

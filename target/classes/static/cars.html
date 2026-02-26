@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse the Triple-J Car Rentals fleet. Find the perfect vehicle for your needs.">
+    <title>Browse Cars — Triple-J Car Rentals</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+
+<body>
+    <div class="bg-particles"></div>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">🚗</div>
+                    <span class="logo-text">TRIPLE-J</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+                    <a href="cars.html" class="nav-link active"><span class="nav-icon">🚙</span> Browse Cars</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Transactions</div>
+                    <a href="transactions.html" class="nav-link"><span class="nav-icon">📋</span> Rent / Reserve</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> My Profile</a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-id" id="userIdDisplay">ID: —</div>
+                    </div>
+                </div>
+                <a href="#" class="nav-link" style="margin-top:8px;color:var(--accent-red);" onclick="logout()"><span
+                        class="nav-icon">🚪</span> Log Out</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Browse Cars</h1>
+                <p>Explore our premium fleet and find your perfect ride.</p>
+            </div>
+
+            <div class="filter-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by brand, model, or color..."
+                        oninput="filterCars()">
+                </div>
+                <select class="filter-select" id="statusFilter" onchange="filterCars()">
+                    <option value="all">All Status</option>
+                    <option value="AVAILABLE">Available</option>
+                    <option value="RENTED">Rented</option>
+                    <option value="RESERVED">Reserved</option>
+                </select>
+                <select class="filter-select" id="brandFilter" onchange="filterCars()">
+                    <option value="all">All Brands</option>
+                </select>
+            </div>
+
+            <div class="car-grid" id="carGrid">
+                <div class="empty-state">
+                    <div class="empty-icon">🔄</div>
+                    <p>Loading cars...</p>
+                </div>
+            </div>
+
+            <!-- Car Detail Modal -->
+            <div class="modal-overlay" id="carModal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">Car Details</h3>
+                        <button class="modal-close" onclick="closeModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" id="modalBody"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth();
+        loadUserInfo();
+
+        let allCars = [];
+
+        (async function loadCars() {
+            try {
+                const res = await api.getAllCars();
+                if (res.success) {
+                    allCars = res.data;
+                    populateBrandFilter();
+                    renderCars(allCars);
+                }
+            } catch (e) {
+                document.getElementById('carGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Failed to load cars.</p></div>';
+            }
+        })();
+
+        function populateBrandFilter() {
+            const brands = [...new Set(allCars.map(c => c.brand))].sort();
+            const select = document.getElementById('brandFilter');
+            brands.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b;
+                opt.textContent = b;
+                select.appendChild(opt);
+            });
+        }
+
+        function filterCars() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const brand = document.getElementById('brandFilter').value;
+
+            let filtered = allCars.filter(c => {
+                const matchSearch = !search ||
+                    c.brand.toLowerCase().includes(search) ||
+                    c.model.toLowerCase().includes(search) ||
+                    c.color.toLowerCase().includes(search) ||
+                    String(c.carID).includes(search);
+                const matchStatus = status === 'all' || c.status === status;
+                const matchBrand = brand === 'all' || c.brand === brand;
+                return matchSearch && matchStatus && matchBrand;
+            });
+
+            renderCars(filtered);
+        }
+
+        function renderCars(cars) {
+            const grid = document.getElementById('carGrid');
+            if (cars.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🚫</div><p>No cars match your search.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = cars.map((c, i) => `
+                <div class="car-card animate-in" style="animation-delay:${i * 0.04}s" onclick="showCarDetail(${c.carID})">
+                    <div class="car-card-header">
+                        <div>
+                            <div class="car-brand">${c.brand}</div>
+                            <div class="car-model">${c.model}</div>
+                        </div>
+                        <span class="badge badge-${c.status.toLowerCase()}">${c.status}</span>
+                    </div>
+                    <div class="car-details">
+                        <div class="car-detail"><span class="detail-icon">🎨</span> ${c.color}</div>
+                        <div class="car-detail"><span class="detail-icon">🏷️</span> ID: ${c.carID}</div>
+                    </div>
+                    <div class="car-footer">
+                        <div class="car-price">₱${c.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span>/day</span></div>
+                        ${c.status === 'AVAILABLE' ? '<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();quickRent(' + c.carID + ')">Rent Now</button>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showCarDetail(id) {
+            const c = allCars.find(car => car.carID === id);
+            if (!c) return;
+            document.getElementById('modalTitle').textContent = c.brand + ' ' + c.model;
+            document.getElementById('modalBody').innerHTML = `
+                <div style="text-align:center;margin-bottom:24px;">
+                    <div class="car-icon" style="width:80px;height:80px;font-size:40px;margin:0 auto 16px;">🚗</div>
+                    <span class="badge badge-${c.status.toLowerCase()}" style="font-size:13px;padding:6px 16px;">${c.status}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div><div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Car ID</div><div style="font-weight:600;">${c.carID}</div></div>
+                    <div><div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Brand</div><div style="font-weight:600;">${c.brand}</div></div>
+                    <div><div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Model</div><div style="font-weight:600;">${c.model}</div></div>
+                    <div><div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Color</div><div style="font-weight:600;">${c.color}</div></div>
+                    <div style="grid-column:span 2;"><div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Price per Day</div><div class="car-price">₱${c.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div></div>
+                </div>
+                ${c.status === 'AVAILABLE' ? `
+                <div style="display:flex;gap:12px;margin-top:24px;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="quickRent(${c.carID})">🔑 Rent Now</button>
+                    <button class="btn btn-warning" style="flex:1;" onclick="quickReserve(${c.carID})">📅 Reserve</button>
+                </div>` : ''}
+            `;
+            document.getElementById('carModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('carModal').classList.remove('active');
+        }
+
+        async function quickRent(carId) {
+            const customer = JSON.parse(localStorage.getItem('customer'));
+            const res = await api.rentCar(customer.customerID, carId);
+            if (res.success) {
+                showToast('success', res.message);
+                closeModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('error', res.message);
+            }
+        }
+
+        async function quickReserve(carId) {
+            const customer = JSON.parse(localStorage.getItem('customer'));
+            const res = await api.reserveCar(customer.customerID, carId);
+            if (res.success) {
+                showToast('success', res.message);
+                closeModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('error', res.message);
+            }
+        }
+
+        document.getElementById('carModal').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+
+</html>

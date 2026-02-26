@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your car rentals, reservations, and returns at Triple-J Car Rentals.">
+    <title>Transactions — Triple-J Car Rentals</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+
+<body>
+    <div class="bg-particles"></div>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">🚗</div><span class="logo-text">TRIPLE-J</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+                    <a href="cars.html" class="nav-link"><span class="nav-icon">🚙</span> Browse Cars</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Transactions</div>
+                    <a href="transactions.html" class="nav-link active"><span class="nav-icon">📋</span> Rent /
+                        Reserve</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> My Profile</a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-id" id="userIdDisplay">ID: —</div>
+                    </div>
+                </div>
+                <a href="#" class="nav-link" style="margin-top:8px;color:var(--accent-red);" onclick="logout()"><span
+                        class="nav-icon">🚪</span> Log Out</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Transactions</h1>
+                <p>Rent, reserve, or return vehicles from our fleet.</p>
+            </div>
+
+            <div class="tabs" id="transactionTabs">
+                <button class="tab-btn active" data-tab="rent" onclick="switchTab('rent')">🔑 Rent a Car</button>
+                <button class="tab-btn" data-tab="reserve" onclick="switchTab('reserve')">📅 Reserve</button>
+                <button class="tab-btn" data-tab="return" onclick="switchTab('return')">↩️ Return</button>
+            </div>
+
+            <!-- Rent Tab -->
+            <div class="tab-panel active" id="tab-rent">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Rent a Car</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color:var(--text-secondary);margin-bottom:20px;">Select an available car to rent. An
+                            invoice will be automatically generated.</p>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>Color</th>
+                                        <th>Price/Day</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rentCarList">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reserve Tab -->
+            <div class="tab-panel" id="tab-reserve">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Reserve a Car</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color:var(--text-secondary);margin-bottom:20px;">Reserve a car to book it for later
+                            pickup.</p>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>Color</th>
+                                        <th>Price/Day</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reserveCarList">
+                                    <tr>
+                                        <td colspan="7" style="text-align:center;color:var(--text-muted);">Loading...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Return Tab -->
+            <div class="tab-panel" id="tab-return">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Return a Car</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color:var(--text-secondary);margin-bottom:20px;">Return rented or cancel reserved
+                            vehicles.</p>
+
+                        <h3 style="font-size:15px;margin-bottom:12px;color:var(--accent-cyan);">🔑 Your Rented Cars</h3>
+                        <div class="table-container" style="margin-bottom:24px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Car ID</th>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>Color</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnRentalList">
+                                    <tr>
+                                        <td colspan="7" style="text-align:center;color:var(--text-muted);">Loading...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3 style="font-size:15px;margin-bottom:12px;color:var(--accent-amber);">📅 Your Reserved Cars
+                        </h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Res. ID</th>
+                                        <th>Car ID</th>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnReserveList">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth();
+        loadUserInfo();
+        const customer = JSON.parse(localStorage.getItem('customer'));
+
+        // Check URL params for tab
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        if (tabParam) switchTab(tabParam);
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            if (tab === 'rent') loadRentList();
+            else if (tab === 'reserve') loadReserveList();
+            else if (tab === 'return') loadReturnList();
+        }
+
+        async function loadRentList() {
+            try {
+                const res = await api.getAvailableCars();
+                const tbody = document.getElementById('rentCarList');
+                if (res.success && res.data.length > 0) {
+                    tbody.innerHTML = res.data.map(c => `
+                        <tr>
+                            <td><strong>${c.carID}</strong></td>
+                            <td>${c.brand}</td>
+                            <td>${c.model}</td>
+                            <td>${c.color}</td>
+                            <td>₱${c.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td><button class="btn btn-sm btn-primary" onclick="doRent(${c.carID})">Rent</button></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No available cars to rent.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadReserveList() {
+            try {
+                const res = await api.getAllCars();
+                const tbody = document.getElementById('reserveCarList');
+                if (res.success) {
+                    tbody.innerHTML = res.data.map(c => `
+                        <tr>
+                            <td><strong>${c.carID}</strong></td>
+                            <td>${c.brand}</td>
+                            <td>${c.model}</td>
+                            <td>${c.color}</td>
+                            <td>₱${c.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td><span class="badge badge-${c.status.toLowerCase()}">${c.status}</span></td>
+                            <td>${c.status === 'AVAILABLE' ? `<button class="btn btn-sm btn-warning" onclick="doReserve(${c.carID})">Reserve</button>` : '—'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadReturnList() {
+            try {
+                const res = await api.getProfile(customer.customerID);
+                if (!res.success) return;
+
+                const rentalBody = document.getElementById('returnRentalList');
+                const activeRentals = (res.data.rentals || []).filter(r => r.status === 'ACTIVE');
+                if (activeRentals.length > 0) {
+                    rentalBody.innerHTML = activeRentals.map(r => `
+                        <tr>
+                            <td><strong>${r.carID}</strong></td>
+                            <td>${r.carBrand}</td>
+                            <td>${r.carModel}</td>
+                            <td>${r.carColor}</td>
+                            <td>₱${r.carPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td><span class="badge badge-active">${r.status}</span></td>
+                            <td><button class="btn btn-sm btn-success" onclick="doReturn(${r.carID})">Return</button></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    rentalBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No active rentals.</td></tr>';
+                }
+
+                const reserveBody = document.getElementById('returnReserveList');
+                const activeReservations = (res.data.reservations || []).filter(r => r.status === 'RESERVED');
+                if (activeReservations.length > 0) {
+                    reserveBody.innerHTML = activeReservations.map(r => `
+                        <tr>
+                            <td>${r.reservationID}</td>
+                            <td><strong>${r.carID}</strong></td>
+                            <td>${r.carBrand}</td>
+                            <td>${r.carModel}</td>
+                            <td><span class="badge badge-reserved">${r.status}</span></td>
+                            <td><button class="btn btn-sm btn-danger" onclick="doReturn(${r.carID})">Cancel</button></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    reserveBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No active reservations.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function doRent(carId) {
+            const res = await api.rentCar(customer.customerID, carId);
+            if (res.success) {
+                showToast('success', res.message);
+                setTimeout(() => loadRentList(), 600);
+            } else {
+                showToast('error', res.message);
+            }
+        }
+
+        async function doReserve(carId) {
+            const res = await api.reserveCar(customer.customerID, carId);
+            if (res.success) {
+                showToast('success', res.message);
+                setTimeout(() => loadReserveList(), 600);
+            } else {
+                showToast('error', res.message);
+            }
+        }
+
+        async function doReturn(carId) {
+            const res = await api.returnCar(customer.customerID, carId);
+            if (res.success) {
+                showToast('success', res.message);
+                setTimeout(() => loadReturnList(), 600);
+            } else {
+                showToast('error', res.message);
+            }
+        }
+
+        // Load initial tab
+        loadRentList();
+    </script>
+</body>
+
+</html>

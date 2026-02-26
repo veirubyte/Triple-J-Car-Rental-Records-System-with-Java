@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Triple-J Car Rentals Dashboard — Manage your rentals, reservations, and vehicle fleet.">
+    <title>Dashboard — Triple-J Car Rentals</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+
+<body>
+    <div class="bg-particles"></div>
+
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">🚗</div>
+                    <span class="logo-text">TRIPLE-J</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-link active">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                    <a href="cars.html" class="nav-link">
+                        <span class="nav-icon">🚙</span> Browse Cars
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Transactions</div>
+                    <a href="transactions.html" class="nav-link">
+                        <span class="nav-icon">📋</span> Rent / Reserve
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="profile.html" class="nav-link">
+                        <span class="nav-icon">👤</span> My Profile
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" id="userCard">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-id" id="userIdDisplay">ID: —</div>
+                    </div>
+                </div>
+                <a href="#" class="nav-link" style="margin-top:8px; color: var(--accent-red);" onclick="logout()">
+                    <span class="nav-icon">🚪</span> Log Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p>Welcome back! Here's an overview of your fleet.</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card cyan animate-in">
+                    <div class="stat-icon">🚗</div>
+                    <div class="stat-value" id="statTotal">—</div>
+                    <div class="stat-label">Total Cars</div>
+                </div>
+                <div class="stat-card green animate-in">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="statAvailable">—</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-card amber animate-in">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value" id="statRented">—</div>
+                    <div class="stat-label">Rented</div>
+                </div>
+                <div class="stat-card purple animate-in">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-value" id="statReserved">—</div>
+                    <div class="stat-label">Reserved</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="page-header" style="margin-bottom:16px">
+                <h2 style="font-size:18px;">Quick Actions</h2>
+            </div>
+            <div class="quick-actions">
+                <a href="transactions.html?tab=rent" class="quick-action rent animate-in">
+                    <div class="action-icon">🔑</div>
+                    <div>
+                        <div class="action-text">Rent a Car</div>
+                        <div class="action-desc">Browse and rent available vehicles</div>
+                    </div>
+                </a>
+                <a href="transactions.html?tab=reserve" class="quick-action reserve animate-in">
+                    <div class="action-icon">📅</div>
+                    <div>
+                        <div class="action-text">Reserve a Car</div>
+                        <div class="action-desc">Book a vehicle for later</div>
+                    </div>
+                </a>
+                <a href="transactions.html?tab=return" class="quick-action return animate-in">
+                    <div class="action-icon">↩️</div>
+                    <div>
+                        <div class="action-text">Return a Car</div>
+                        <div class="action-desc">Return your rented vehicle</div>
+                    </div>
+                </a>
+                <a href="cars.html" class="quick-action cars animate-in">
+                    <div class="action-icon">🏎️</div>
+                    <div>
+                        <div class="action-text">Browse Fleet</div>
+                        <div class="action-desc">View all cars in our fleet</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Recent Cars Preview -->
+            <div class="card animate-in" style="margin-top:8px">
+                <div class="card-header">
+                    <h2>Available Cars</h2>
+                    <a href="cars.html" class="btn btn-sm btn-secondary">View All →</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table" id="recentCarsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Color</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentCarsBody">
+                                <tr>
+                                    <td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth();
+        loadUserInfo();
+
+        // Load stats
+        (async function () {
+            try {
+                const res = await api.getStats();
+                if (res.success) {
+                    animateCounter('statTotal', res.data.totalCars);
+                    animateCounter('statAvailable', res.data.availableCars);
+                    animateCounter('statRented', res.data.rentedCars);
+                    animateCounter('statReserved', res.data.reservedCars);
+                }
+            } catch (e) { console.error(e); }
+        })();
+
+        // Load recent available cars
+        (async function () {
+            try {
+                const res = await api.getAvailableCars();
+                if (res.success) {
+                    const tbody = document.getElementById('recentCarsBody');
+                    const cars = res.data.slice(0, 8);
+                    if (cars.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No available cars</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = cars.map(c => `
+                        <tr>
+                            <td><strong>${c.carID}</strong></td>
+                            <td>${c.brand}</td>
+                            <td>${c.model}</td>
+                            <td>${c.color}</td>
+                            <td>₱${c.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td><span class="badge badge-${c.status.toLowerCase()}">${c.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        })();
+
+        function animateCounter(id, target) {
+            const el = document.getElementById(id);
+            let current = 0;
+            const increment = Math.ceil(target / 30);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                el.textContent = current;
+            }, 30);
+        }
+    </script>
+</body>
+
+</html>
